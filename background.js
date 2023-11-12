@@ -40,7 +40,7 @@ var prevDomain = null;
       Helpers
 */
 
-// Function to convert seconds to days, hours, minutes, and seconds
+// Convert seconds to days, hours, minutes, and seconds
 function convertTime(seconds) {
   const d = Math.floor(seconds / (24 * 3600));
   const h = Math.floor((seconds % (24 * 3600)) / 3600);
@@ -49,6 +49,21 @@ function convertTime(seconds) {
 
   return { d, h, m, s };
 }
+
+// Display time in a nice format. Expected input is from above function
+function displayTime(time) {
+  const units = ['d', 'h', 'm', 's'];
+  let timeString = '';
+
+  for (const unit of units) {
+    if (time[unit] > 0 || timeString !== '') {
+      timeString += time[unit] + unit;
+    }
+  }
+
+  return timeString;
+}
+
 
 /*
      Main Function
@@ -144,14 +159,5 @@ browser.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
   if (changeInfo.url) {
     // Log information about the updated tab
     logActiveTabInfo(tabId);
-  }
-});
-
-// Log information about the active tab when the extension is first loaded
-browser.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-  if (tabs.length > 0) {
-    logActiveTabInfo(tabs[0].id);
-  } else {
-    console.log("No active tabs found.");
   }
 });

@@ -1,14 +1,22 @@
 body {
-    width: 200px;
-    padding: 10px;
-  }
-  
-  ul {
-    list-style-type: none;
-    padding: 0;
-  }
-  
-  li {
-    margin-bottom: 5px;
-  }
-  
+  font-family: 'Chivo Mono', monospace;
+}
+
+div {
+  font-family: 'Chivo Mono', monospace;
+}
+
+.heading {
+  font-size: 35px;
+  margin-bottom: 20px;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+span {
+  float: right;
+}

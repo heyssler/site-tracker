@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       a.textContent = entry;
 
       const totalTime = convertTime(Math.floor(data[entry] / 1000));
-      const totalTimeString = `${totalTime.d}d${totalTime.h}h${totalTime.m}m${totalTime.s}s`;
+      const totalTimeString = displayTime(totalTime);
       span.textContent = totalTimeString;
 
       li.appendChild(a);
