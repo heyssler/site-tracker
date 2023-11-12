@@ -2,26 +2,36 @@
      Storage
 */
 
-chrome.runtime.onInstalled.addListener(function(details) {
+chrome.runtime.onInstalled.addListener(async details => {
+  // Check if the extension was just installed
   if (details.reason === 'install') {
-    chrome.storage.sync.get('siteData', function(result) {
-      if (!result.siteData) {
-        console.log("Installing for the first time!");
-        chrome.storage.sync.set({ siteData: {} });
-      }
-    });
+    try {
+      // Set the initial data when the extension is installed
+      await setStorageData({ data: {} });
+      console.log('Extension installed. Initial data set.');
+    } catch (error) {
+      console.error('Error setting initial data:', error.message);
+    }
   }
 });
 
-function getSiteData(callback) {
-  chrome.storage.sync.get('siteData', function(result) {
-    console.log(`Result is ${result}`);
-    result ? siteData = result.siteData : siteData = {};
-    //const siteData = result.siteData || {};
-    callback(siteData);
-  });
-}
+const getStorageData = key =>
+  new Promise((resolve, reject) =>
+    chrome.storage.sync.get(key, result =>
+      chrome.runtime.lastError
+        ? reject(Error(chrome.runtime.lastError.message))
+        : resolve(result)
+    )
+  )
 
+const setStorageData = data =>
+  new Promise((resolve, reject) =>
+    chrome.storage.sync.set(data, () =>
+      chrome.runtime.lastError
+        ? reject(Error(chrome.runtime.lastError.message))
+        : resolve()
+    )
+  )
 
 var prevTimestamp = null;
 var prevDomain = null;
@@ -45,74 +55,75 @@ function convertTime(seconds) {
 */
 
 // Function to log information about the active tab with a timestamp
-function logActiveTabInfo(tabId) {
-  getSiteData(function(siteData) {
-    console.log("----- NEW TAB -----");
-    // Get the updated tab information
-    browser.tabs.get(tabId, function (tab) {
-      if (tab) {
-        // Generate a timestamp. This represents the visit time to this site.
-        var currTimestamp = new Date();
+async function logActiveTabInfo(tabId) {
+  const { data } = await getStorageData('data');
 
-        // Get the full domain (hostname) from the URL
-        var url = new URL(tab.url);
-        var domain = url.hostname;
+  console.log("----- NEW TAB -----");
+  // Get the updated tab information
+  browser.tabs.get(tabId, async function (tab) {
+    if (tab) {
+      // Generate a timestamp. This represents the visit time to this site.
+      var currTimestamp = new Date();
 
-        // This means that we are in an 
-        if (domain.length === 0){
-          domain = "Blank Page"
-        }
+      // Get the full domain (hostname) from the URL
+      var url = new URL(tab.url);
+      var domain = url.hostname;
 
-        console.log(`Active Tab: ${domain}`);
-
-        if (!prevTimestamp){
-          console.log(`prevTimestamp is NULL`);
-        } else {
-          console.log(`prevTimestamp: ${prevTimestamp.toLocaleString()}`);
-        }
-        console.log(`currTimestamp: ${currTimestamp.toLocaleString()}`);
-
-        // Handle the first session
-        if (!prevTimestamp){
-          prevTimestamp = currTimestamp;
-        }
-
-        if (!prevDomain){
-          prevDomain = domain;
-        }
-
-        if ((prevTimestamp === currTimestamp) || (prevDomain === domain)){
-          // These conditions indicate the first session
-          chrome.storage.sync.set({ siteData: siteData });
-          return;
-        }
-        
-        // Handle sessions after the first
-        // Update the time spent on the site
-        const timeDifference = currTimestamp - prevTimestamp;
-
-        if (siteData[prevDomain]){
-          siteData[prevDomain] = siteData[prevDomain] + timeDifference;
-        } else{
-          siteData[prevDomain] = timeDifference;
-        }
-
-        const sessionTime = convertTime(Math.floor(timeDifference / 1000));
-        console.log(`Session time for ${prevDomain}: ${sessionTime.d}d${sessionTime.h}h${sessionTime.m}m${sessionTime.s}s`);
-        
-        const totalTime = convertTime(Math.floor(siteData[prevDomain] / 1000));
-        console.log(`Total time spent on ${prevDomain}: ${totalTime.d}d${totalTime.h}h${totalTime.m}m${totalTime.s}s`);
-
-        // Update pointers
-        prevTimestamp = currTimestamp;
-        prevDomain = domain;
-        chrome.storage.sync.set({ siteData: siteData });
-
-      } else {
-        console.log("No active tabs found.");
+      // This means that we are in an 
+      if (domain.length === 0){
+        domain = "Blank Page"
       }
-    });
+
+      console.log(`Active Tab: ${domain}`);
+
+      if (!prevTimestamp){
+        console.log(`prevTimestamp is NULL`);
+      } else {
+        console.log(`prevTimestamp: ${prevTimestamp.toLocaleString()}`);
+      }
+      console.log(`currTimestamp: ${currTimestamp.toLocaleString()}`);
+
+      // Handle the first session
+      if (!prevTimestamp){
+        prevTimestamp = currTimestamp;
+      }
+
+      if (!prevDomain){
+        prevDomain = domain;
+      }
+
+      if ((prevTimestamp === currTimestamp) || (prevDomain === domain)){
+        // These conditions indicate the first session
+        return;
+      }
+      
+      // Handle sessions after the first
+      // Update the time spent on the site
+      const timeDifference = currTimestamp - prevTimestamp;
+
+      if (data[prevDomain]){
+        data[prevDomain] = data[prevDomain] + timeDifference;
+      } else{
+        data[prevDomain] = timeDifference;
+      }
+
+      const sessionTime = convertTime(Math.floor(timeDifference / 1000));
+      console.log(`Session time for ${prevDomain}: ${sessionTime.d}d${sessionTime.h}h${sessionTime.m}m${sessionTime.s}s`);
+      
+      const totalTime = convertTime(Math.floor(data[prevDomain] / 1000));
+      console.log(`Total time spent on ${prevDomain}: ${totalTime.d}d${totalTime.h}h${totalTime.m}m${totalTime.s}s`);
+
+      // Update pointers
+      prevTimestamp = currTimestamp;
+      prevDomain = domain;
+
+      // Save the data
+      await setStorageData({ data: data })
+    } else {
+      console.log("No active tabs found.");
+    }
   });
+
 }
 
 
