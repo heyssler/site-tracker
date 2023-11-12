@@ -69,7 +69,8 @@ async function logActiveTabInfo(tabId) {
       var url = new URL(tab.url);
       var domain = url.hostname;
 
-      // This means that we are in an 
+      // This means that we are in a new tab, without a URL
+      // i.e. 'about:newtab', or 'about:debugging'
       if (domain.length === 0){
         domain = "Blank Page"
       }
@@ -92,8 +93,8 @@ async function logActiveTabInfo(tabId) {
         prevDomain = domain;
       }
 
+      // These conditions indicate the first session
       if ((prevTimestamp === currTimestamp) || (prevDomain === domain)){
-        // These conditions indicate the first session
         return;
       }
       
@@ -119,13 +120,13 @@ async function logActiveTabInfo(tabId) {
 
       // Save the data
       await setStorageData({ data: data })
+
     } else {
       console.log("No active tabs found.");
     }
   });
 
 }
-
 
 /*
      Listeners
