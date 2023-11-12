@@ -71,30 +71,31 @@ let timeInterval;
 // Increment the time given the domain
 async function incrementTime() {
   const { domain } = await getStorageData('domain');
+  const { data } = await getStorageData('data');
 
-  if (domain){
-    const { data } = await getStorageData('data');
 
-  
-    if (data[domain]){
-      data[domain] = data[domain] + 1;
-    } else {
-      data[domain] = 1;
-    }
-  
-    await setStorageData({ data: data });
-    await setStorageData({ domain: [domain] });
-
-    console.debug(`${domain} - ${data[domain]}`);
+  if (data[domain]){
+    data[domain] = data[domain] + 1;
   } else {
-    console.debug("Domain is null!");
+    data[domain] = 1;
   }
+
+  await setStorageData({ data: data });
+  await setStorageData({ domain });
+
+  console.debug(`${domain} - ${data[domain]}`);
 }
 
 
 async function startTimer() {
-  // reset 
-  clearInterval(timeInterval);
+  // Create a promise for clearing the interval
+  const clearIntervalPromise = new Promise((resolve) => {
+    clearInterval(timeInterval);
+    resolve();
+  });
+
+  // Wait for the interval to be cleared before starting a new one
+  await clearIntervalPromise;
 
   // start
   timeInterval = setInterval(incrementTime, 1000);
@@ -103,15 +104,20 @@ async function startTimer() {
 // Function to log information about the active tab with a timestamp
 async function logActiveTabInfo(tabId) {
   //const { data } = await getStorageData('data');
-  browser.tabs.get(tabId, async function (tab) {
+  chrome.tabs.get(tabId, async function (tab) {
     if (tab) {
       let url = new URL(tab.url);
       let domain = url.hostname;
 
-      await setStorageData({ domain: [domain] });
+      await setStorageData({ domain });
 
       console.debug(`---- ${domain} ----`);
-      startTimer(domain);
+      if (!(domain === "")){
+        startTimer(domain);
+      } else {
+        clearInterval(timeInterval);
+      }
+
     }
   });
 }
@@ -121,13 +127,13 @@ async function logActiveTabInfo(tabId) {
 */
 
 // Add an event listener for tab activation
-browser.tabs.onActivated.addListener(function (activeInfo) {
+chrome.tabs.onActivated.addListener(function (activeInfo) {
   // Log information about the newly activated tab
   logActiveTabInfo(activeInfo.tabId);
 });
 
 // Add an event listener for tab updates
-browser.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+chrome.tabs.onUpdated.addListener(function (tabId, changeInfo) {
   // Check if the URL has changed
   if (changeInfo.url) {
     // Log information about the updated tab
