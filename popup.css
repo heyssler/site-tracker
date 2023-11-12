@@ -9,6 +9,7 @@ div {
 .heading {
   font-size: 35px;
   margin-bottom: 20px;
+  font-weight: bold;
 }
 
 ul {

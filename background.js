@@ -8,7 +8,7 @@ chrome.runtime.onInstalled.addListener(async details => {
     try {
       // Set the initial data when the extension is installed
       await setStorageData({ data: {} });
-      console.log('Extension installed. Initial data set.');
+      console.info('Extension installed. Initial data set.');
     } catch (error) {
       console.error('Error setting initial data:', error.message);
     }
@@ -32,9 +32,6 @@ const setStorageData = data =>
         : resolve()
     )
   )
-
-var prevTimestamp = null;
-var prevDomain = null;
 
 /*
       Helpers
@@ -66,81 +63,57 @@ function displayTime(time) {
 
 
 /*
-     Main Function
+     Main Functionality
 */
+
+let timeInterval;
+
+// Increment the time given the domain
+async function incrementTime() {
+  const { domain } = await getStorageData('domain');
+
+  if (domain){
+    const { data } = await getStorageData('data');
+
+  
+    if (data[domain]){
+      data[domain] = data[domain] + 1;
+    } else {
+      data[domain] = 1;
+    }
+  
+    await setStorageData({ data: data });
+    await setStorageData({ domain: [domain] });
+
+    console.debug(`${domain} - ${data[domain]}`);
+  } else {
+    console.debug("Domain is null!");
+  }
+}
+
+
+async function startTimer() {
+  // reset 
+  clearInterval(timeInterval);
+
+  // start
+  timeInterval = setInterval(incrementTime, 1000);
+}
 
 // Function to log information about the active tab with a timestamp
 async function logActiveTabInfo(tabId) {
-  const { data } = await getStorageData('data');
-
-  console.log("----- NEW TAB -----");
-  // Get the updated tab information
+  //const { data } = await getStorageData('data');
   browser.tabs.get(tabId, async function (tab) {
     if (tab) {
-      // Generate a timestamp. This represents the visit time to this site.
-      var currTimestamp = new Date();
+      let url = new URL(tab.url);
+      let domain = url.hostname;
 
-      // Get the full domain (hostname) from the URL
-      var url = new URL(tab.url);
-      var domain = url.hostname;
+      await setStorageData({ domain: [domain] });
 
-      // This means that we are in a new tab, without a URL
-      // i.e. 'about:newtab', or 'about:debugging'
-      if (domain.length === 0){
-        domain = "Blank Page"
-      }
-
-      console.log(`Active Tab: ${domain}`);
-
-      if (!prevTimestamp){
-        console.log(`prevTimestamp is NULL`);
-      } else {
-        console.log(`prevTimestamp: ${prevTimestamp.toLocaleString()}`);
-      }
-      console.log(`currTimestamp: ${currTimestamp.toLocaleString()}`);
-
-      // Handle the first session
-      if (!prevTimestamp){
-        prevTimestamp = currTimestamp;
-      }
-
-      if (!prevDomain){
-        prevDomain = domain;
-      }
-
-      // These conditions indicate the first session
-      if ((prevTimestamp === currTimestamp) || (prevDomain === domain)){
-        return;
-      }
-      
-      // Handle sessions after the first
-      // Update the time spent on the site
-      const timeDifference = currTimestamp - prevTimestamp;
-
-      if (data[prevDomain]){
-        data[prevDomain] = data[prevDomain] + timeDifference;
-      } else{
-        data[prevDomain] = timeDifference;
-      }
-
-      const sessionTime = convertTime(Math.floor(timeDifference / 1000));
-      console.log(`Session time for ${prevDomain}: ${sessionTime.d}d${sessionTime.h}h${sessionTime.m}m${sessionTime.s}s`);
-      
-      const totalTime = convertTime(Math.floor(data[prevDomain] / 1000));
-      console.log(`Total time spent on ${prevDomain}: ${totalTime.d}d${totalTime.h}h${totalTime.m}m${totalTime.s}s`);
-
-      // Update pointers
-      prevTimestamp = currTimestamp;
-      prevDomain = domain;
-
-      // Save the data
-      await setStorageData({ data: data })
-
-    } else {
-      console.log("No active tabs found.");
+      console.debug(`---- ${domain} ----`);
+      startTimer(domain);
     }
   });
-
 }
 
 /*
