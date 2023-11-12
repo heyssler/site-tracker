@@ -56,8 +56,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.error("Found blank entry! This may lead to issues.");
       }
       });
-  
-      console.debug(`Top ${numEntries} entries: ${topEntries}`);
+      
+      if (topEntries.length === 0){
+        var infoDiv = document.getElementById('entryList');
+        infoDiv.textContent = "Start browsing the web to see data!";
+      } else {
+        console.debug(`Top ${numEntries} entries: ${topEntries}`);
+      }
     } else {
         console.error('No data found.');
     }
@@ -66,9 +71,10 @@ document.addEventListener('DOMContentLoaded', async function() {
   
   const drawContentPromise = new Promise((resolve) => {
     drawContent();
-    setInterval(updateContent, 1000);
     resolve();
   });
 
   await drawContentPromise;
+
+  setInterval(updateContent, 1000);
 });
