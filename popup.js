@@ -35,15 +35,18 @@ document.addEventListener('DOMContentLoaded', async function() {
           var a = document.createElement('a');
           var span = document.createElement('span');
           
-          a.href = entry;
+
           a.textContent = entry;
+          // Add a click event listener to open the link in a new tab
+          a.addEventListener('click', function () {
+            chrome.tabs.create({ url: 'http://' + entry });
+          });
     
           const totalTime = convertTime(data[entry]);
           const totalTimeString = displayTime(totalTime);
-          
           span.textContent = totalTimeString;
-
           span.id = entry;
+
     
           li.appendChild(a);
           li.appendChild(span);
@@ -60,13 +63,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
   }
 
+  
   const drawContentPromise = new Promise((resolve) => {
     drawContent();
+    setInterval(updateContent, 1000);
     resolve();
   });
 
   await drawContentPromise;
-
-  // Set up interval to update the counter every second
-  const updateInterval = setInterval(updateContent, 1000);
 });

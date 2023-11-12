@@ -6,6 +6,10 @@ div {
   font-family: 'Chivo Mono', monospace;
 }
 
+a {
+  color: blue;
+}
+
 .heading {
   font-size: 35px;
   margin-bottom: 20px;
