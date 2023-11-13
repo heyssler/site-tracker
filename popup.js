@@ -65,9 +65,54 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
   }
 
-  
+  async function drawPieChart(){
+    // Get the data
+    const { data } = await getStorageData('data');
+    const numEntries = 10;
+
+
+    // Colors for each slice
+    const colors = ['#E0CA3C', '#C8C344', '#AFBC4B', '#97B553', '#7EAE5B', '#66A662', '#4D9F6A', '#359872', '#1C9179', '#048A81'];
+
+    // Get the canvas element
+    const canvas = document.getElementById('pieChart');
+    const context = canvas.getContext('2d');
+    const pieInfo = document.getElementById('pieInfo');
+
+    // Get an array of the top N values
+    const dataArray = Object.entries(data).sort((a, b) => b[1] - a[1]);
+    const topEntries = dataArray.slice(0, numEntries).map(entry => entry[0]);
+    const total = topEntries.reduce((acc, entry) => acc + data[entry], 0);
+    const totalFormatted = displayTime(convertTime(total));
+
+    pieInfo.textContent = `${totalFormatted}`;
+
+    let currentAngle = 0;
+    let i = 0;
+    topEntries.forEach(entry => {
+      let portionAngle = (data[entry] / total) * 2 * Math.PI;
+
+      context.beginPath();
+      context.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, currentAngle, currentAngle + portionAngle);
+      currentAngle += portionAngle;
+      context.lineTo(canvas.width / 2, canvas.height / 2);
+      // fill in the slices
+      context.fillStyle = colors[i];
+      //context.closePath();
+      context.fill();
+      i++;
+    });
+
+  }
+
+  /*
+        Function calls
+  */
+
+
   const drawContentPromise = new Promise((resolve) => {
     drawContent();
+    drawPieChart();
     resolve();
   });
 
