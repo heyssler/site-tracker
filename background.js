@@ -126,17 +126,31 @@ async function logActiveTabInfo(tabId) {
      Listeners
 */
 
-// Add an event listener for tab activation
+// Listener for tab activation
 chrome.tabs.onActivated.addListener(function (activeInfo) {
   // Log information about the newly activated tab
   logActiveTabInfo(activeInfo.tabId);
 });
 
-// Add an event listener for tab updates
+// Listener for tab updates
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo) {
   // Check if the URL has changed
   if (changeInfo.url) {
     // Log information about the updated tab
     logActiveTabInfo(tabId);
+  }
+});
+
+// Listen for window focus change
+chrome.windows.onFocusChanged.addListener(function(windowId) {
+  if (windowId === chrome.windows.WINDOW_ID_NONE) {
+    console.log("No focused window.");
+  } else {
+    // Get the active tab in the focused window
+    chrome.tabs.query({ active: true, windowId: windowId }, function(tabs) {
+      if (tabs.length > 0) {
+        logActiveTabInfo(tabs[0].id);
+      }
+    });
   }
 });
