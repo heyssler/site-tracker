@@ -4,11 +4,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     const { data } = await getStorageData('data');
     const { domain } = await getStorageData('domain');
 
-    //console.debug(`Active domain: ${domain}`);
-
     // Find the <span> element corresponding to the domain
     for (const span of document.querySelectorAll("span")) {
-      if (span.id.includes(`${domain}`)) {
+      if (span.id === (`${domain}`)) {
         span.textContent = displayTime(convertTime(data[domain]));
       }
     }
@@ -18,7 +16,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     const { data } = await getStorageData('data');
     const numEntries = 10;
     var entryList = document.getElementById('entryList');
-    
     if (data) {
       // Convert the object to an array of [key, value] pairs
       const dataArray = Object.entries(data);

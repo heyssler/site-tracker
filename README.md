@@ -4,9 +4,8 @@
 ### TODO
 
 Bugs:
-  1. Fix popover seconds display when tabs are opened up in rapid succession.
-  2. Active tab sometimes does not update
-  3. Uncaught exception with storage:
+  1. Active tab sometimes does not update
+  2. Uncaught exception with storage:
     ![Screenshot 2023-11-12 at 12 19 47 AM](https://github.com/heyssler/site-tracker/assets/150562318/a39bb005-0ee2-4a8e-b937-357151ff92fe)
 
 Features:
