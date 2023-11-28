@@ -5,8 +5,6 @@
 
 Bugs:
   1. Active tab sometimes does not update
-  2. Uncaught exception with storage:
-    ![Screenshot 2023-11-12 at 12 19 47 AM](https://github.com/heyssler/site-tracker/assets/150562318/a39bb005-0ee2-4a8e-b937-357151ff92fe)
 
 Features:
   1. Track data on "inactive" tabs (?)
