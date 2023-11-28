@@ -68,11 +68,11 @@ document.addEventListener('DOMContentLoaded', async function() {
   async function drawPieChart(){
     // Get the data
     const { data } = await getStorageData('data');
-    const numEntries = 10;
+    const numEntries = 5;
 
 
     // Colors for each slice
-    const colors = ['#E0CA3C', '#C8C344', '#AFBC4B', '#97B553', '#7EAE5B', '#66A662', '#4D9F6A', '#359872', '#1C9179', '#048A81'];
+    const colors = ['#8EC2A8', '#DC5356', '#EFCB68', '#5FB7E4', '#AB90C5'];
 
     // Get the canvas element
     const canvas = document.getElementById('pieChart');
@@ -98,25 +98,17 @@ document.addEventListener('DOMContentLoaded', async function() {
       context.lineTo(canvas.width / 2, canvas.height / 2);
       // fill in the slices
       context.fillStyle = colors[i];
-      //context.closePath();
       context.fill();
       i++;
     });
-
   }
 
   /*
         Function calls
   */
 
-
-  const drawContentPromise = new Promise((resolve) => {
-    drawContent();
-    drawPieChart();
-    resolve();
-  });
-
-  await drawContentPromise;
-
+  drawContent();
   setInterval(updateContent, 1000);
+  drawPieChart();
+
 });

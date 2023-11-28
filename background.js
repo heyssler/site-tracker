@@ -73,7 +73,6 @@ async function incrementTime() {
   const { domain } = await getStorageData('domain');
   const { data } = await getStorageData('data');
 
-
   if (data[domain]){
     data[domain] = data[domain] + 1;
   } else {
@@ -81,43 +80,42 @@ async function incrementTime() {
   }
 
   await setStorageData({ data: data });
-  await setStorageData({ domain });
 
   console.debug(`${domain} - ${data[domain]}`);
 }
 
-
+// Function to start an interval for the incrementTime() function
 async function startTimer() {
-  // Create a promise for clearing the interval
-  const clearIntervalPromise = new Promise((resolve) => {
+  const { domain } = await getStorageData('domain');
+  console.debug(`---- ${domain} ----`);
+  if (!(domain === "")){
+    // clear any previous intervals
     clearInterval(timeInterval);
-    resolve();
-  });
-
-  // Wait for the interval to be cleared before starting a new one
-  await clearIntervalPromise;
-
-  // start
-  timeInterval = setInterval(incrementTime, 1000);
+    // start
+    timeInterval = setInterval(incrementTime, 1000);
+  } else {
+    // don't count empty tabs
+    clearInterval(timeInterval);
+  }
 }
 
 // Function to log information about the active tab with a timestamp
-async function logActiveTabInfo(tabId) {
-  //const { data } = await getStorageData('data');
+async function logActiveTabInfo(tabId) {  
   chrome.tabs.get(tabId, async function (tab) {
     if (tab) {
+      let { domain } = await getStorageData('domain');
       let url = new URL(tab.url);
-      let domain = url.hostname;
-
-      await setStorageData({ domain });
-
-      console.debug(`---- ${domain} ----`);
-      if (!(domain === "")){
-        startTimer(domain);
+      let new_domain = url.hostname;
+      
+      // do operations if and only if the domain has changed
+      if (domain !== new_domain){
+        console.debug(`${domain} --> ${new_domain}`);
+        domain = new_domain;
+        await setStorageData({ domain });
+        await startTimer(domain);
       } else {
-        clearInterval(timeInterval);
+        console.debug(`Domain is ${domain}`);
       }
-
     }
   });
 }
@@ -127,30 +125,34 @@ async function logActiveTabInfo(tabId) {
 */
 
 // Listener for tab activation
-chrome.tabs.onActivated.addListener(function (activeInfo) {
-  // Log information about the newly activated tab
-  logActiveTabInfo(activeInfo.tabId);
+chrome.tabs.onActivated.addListener(async function (activeInfo) {
+  console.debug("----> [Listener] tab activation");
+  await logActiveTabInfo(activeInfo.tabId);
 });
 
-// Listener for tab updates
-chrome.tabs.onUpdated.addListener(function (tabId, changeInfo) {
-  // Check if the URL has changed
-  if (changeInfo.url) {
-    // Log information about the updated tab
-    logActiveTabInfo(tabId);
-  }
-});
 
 // Listen for window focus change
-chrome.windows.onFocusChanged.addListener(function(windowId) {
+chrome.windows.onFocusChanged.addListener(async function(windowId) {
+  console.debug("----> [Listener] window focus");
+
   if (windowId === chrome.windows.WINDOW_ID_NONE) {
     console.log("No focused window.");
   } else {
     // Get the active tab in the focused window
-    chrome.tabs.query({ active: true, windowId: windowId }, function(tabs) {
+    chrome.tabs.query({ active: true, windowId: windowId }, async function(tabs) {
       if (tabs.length > 0) {
-        logActiveTabInfo(tabs[0].id);
+        await logActiveTabInfo(tabs[0].id);
       }
     });
+  }
+});
+
+// Listener for tab updates
+chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo) {
+  console.debug("----> [Listener] tab update");
+  // Check if the URL has changed
+  if (changeInfo.url) {
+    // Log information about the updated tab
+    await logActiveTabInfo(tabId);
   }
 });
