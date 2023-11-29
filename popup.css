@@ -15,6 +15,8 @@ body {
 
 a {
   color: blue;
+  text-decoration: none;
+  margin-right: 20px;
 }
 
 ul {
@@ -31,8 +33,10 @@ span {
 canvas {
   display: block;
   margin: 0 auto;
-  width: 250px;
-  height: 250px;
+  width:100%; 
+  height:100%; 
+  max-width: 500px; 
+  max-height: 500px;
 }
 
 .button-54 {

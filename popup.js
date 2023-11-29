@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', async function() {
+  const numEntries = 10;
 
   async function updateContent(){
     const { data } = await getStorageData('data');
@@ -10,19 +11,25 @@ document.addEventListener('DOMContentLoaded', async function() {
         span.textContent = displayTime(convertTime(data[domain]));
       }
     }
+
+    // Update the total time counter
+    const pieInfo = document.getElementById('pieInfo');
+    // Get an array of the top N values
+    const dataArray = Object.entries(data).sort((a, b) => b[1] - a[1]);
+    const topEntries = dataArray.slice(0, numEntries).map(entry => entry[0]);
+    const total = topEntries.reduce((acc, entry) => acc + data[entry], 0);
+    const totalFormatted = displayTime(convertTime(total));
+    pieInfo.textContent = `${totalFormatted}`;
   }
 
   async function drawContent(){
     const { data } = await getStorageData('data');
-    const numEntries = 10;
     var entryList = document.getElementById('entryList');
     if (data) {
       // Convert the object to an array of [key, value] pairs
       const dataArray = Object.entries(data);
-  
       // Sort the array based on the values in descending order
       dataArray.sort((a, b) => b[1] - a[1]);
-  
       // Extract the top entries
       const topEntries = dataArray.slice(0, numEntries).map(entry => entry[0]);
   
@@ -34,16 +41,12 @@ document.addEventListener('DOMContentLoaded', async function() {
           
 
           a.textContent = entry;
-          // Add a click event listener to open the link in a new tab
-          a.addEventListener('click', function () {
-            chrome.tabs.create({ url: 'http://' + entry });
-          });
-    
+          a.href = 'http://' + entry;
+
           const totalTime = convertTime(data[entry]);
           const totalTimeString = displayTime(totalTime);
           span.textContent = totalTimeString;
           span.id = entry;
-
     
           li.appendChild(a);
           li.appendChild(span);
@@ -66,49 +69,63 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
 
   async function drawPieChart(){
-    // Get the data
-    const { data } = await getStorageData('data');
+    // Override global numEntries
     const numEntries = 5;
 
-
-    // Colors for each slice
-    const colors = ['#8EC2A8', '#DC5356', '#EFCB68', '#5FB7E4', '#AB90C5'];
-
-    // Get the canvas element
-    const canvas = document.getElementById('pieChart');
-    const context = canvas.getContext('2d');
-    const pieInfo = document.getElementById('pieInfo');
-
-    // Get an array of the top N values
-    const dataArray = Object.entries(data).sort((a, b) => b[1] - a[1]);
+    const { data } = await getStorageData('data');
+    const dataArray = Object.entries(data);
     const topEntries = dataArray.slice(0, numEntries).map(entry => entry[0]);
+
+    const xValues = [];
+    const yValues = [];
+
+    // Populate xValues and yValues arrays
+    topEntries.forEach(entry => {
+      xValues.push(entry);
+      yValues.push(data[entry]);
+    });
+
+    const barColors = [
+      "#8EC3A7",
+      "#DC5356",
+      "#F0CB69",
+      "#5FB7E5",
+      "#AB91C5"
+    ];
+  
+    new Chart("pieChart", {
+      type: "pie",
+      data: {
+        labels: xValues,
+        datasets: [{
+          backgroundColor: barColors,
+          data: yValues
+        }]
+      },
+      options:{
+        tooltips: {
+          enabled: true
+        },
+        legend: {
+          display: false
+        }
+      }
+    });
+
+    // update footer
     const total = topEntries.reduce((acc, entry) => acc + data[entry], 0);
     const totalFormatted = displayTime(convertTime(total));
-
     pieInfo.textContent = `${totalFormatted}`;
-
-    let currentAngle = 0;
-    let i = 0;
-    topEntries.forEach(entry => {
-      let portionAngle = (data[entry] / total) * 2 * Math.PI;
-
-      context.beginPath();
-      context.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, currentAngle, currentAngle + portionAngle);
-      currentAngle += portionAngle;
-      context.lineTo(canvas.width / 2, canvas.height / 2);
-      // fill in the slices
-      context.fillStyle = colors[i];
-      context.fill();
-      i++;
-    });
   }
+  
 
   /*
         Function calls
   */
 
+
   drawContent();
-  setInterval(updateContent, 1000);
   drawPieChart();
+  setInterval(updateContent, 1000);
 
 });
