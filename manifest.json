@@ -25,6 +25,6 @@
         "48": "external/icon.svg",
         "96": "external/icon.svg"
       },
-      "default_popup": "popup.html"
+      "default_popup": "popup/popup.html"
     }
 }  

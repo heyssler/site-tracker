@@ -1,0 +1,12 @@
+body {
+    font-family: 'Chivo Mono', monospace;
+}
+
+.heading {
+    display: flex;
+    justify-content: center;
+}
+
+.icon {
+    margin-right: 10px;
+}

@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Get an array of the top N values
     const dataArray = Object.entries(data).sort((a, b) => b[1] - a[1]);
     const topEntries = dataArray.slice(0, numEntries).map(entry => entry[0]);
-    const total = topEntries.reduce((acc, entry) => acc + data[entry], 0);
+    const total = dataArray.map(entry => entry[0]).reduce((acc, entry) => acc + data[entry], 0);
     const totalFormatted = displayTime(convertTime(total));
     pieInfo.textContent = `${totalFormatted}`;
   }
@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   async function drawContent(){
     const { data } = await getStorageData('data');
     var entryList = document.getElementById('entryList');
+
     if (data) {
       // Convert the object to an array of [key, value] pairs
       const dataArray = Object.entries(data);
@@ -73,7 +74,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const numEntries = 5;
 
     const { data } = await getStorageData('data');
-    const dataArray = Object.entries(data);
+    const dataArray = Object.entries(data).sort((a, b) => b[1] - a[1]);
     const topEntries = dataArray.slice(0, numEntries).map(entry => entry[0]);
 
     const xValues = [];
@@ -94,7 +95,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     ];
   
     new Chart("pieChart", {
-      type: "pie",
+      type: "doughnut",
       data: {
         labels: xValues,
         datasets: [{
@@ -107,25 +108,47 @@ document.addEventListener('DOMContentLoaded', async function() {
           enabled: true
         },
         legend: {
-          display: false
+          display: true,
+          position: 'right'
         }
       }
     });
 
     // update footer
-    const total = topEntries.reduce((acc, entry) => acc + data[entry], 0);
+    const total = dataArray.map(entry => entry[0]).reduce((acc, entry) => acc + data[entry], 0);
     const totalFormatted = displayTime(convertTime(total));
     pieInfo.textContent = `${totalFormatted}`;
   }
-  
+
+  async function handleButton(){
+    // Get the button element by its ID
+    const button = document.getElementById('developerButton');
+    const { data } = await getStorageData('data');
+
+    // Add an onclick event handler to the button
+    button.onclick = async function() {
+        // Actions to perform when the button is clicked
+        console.log('Button clicked!');
+        for (const key in data) {
+          if (Object.hasOwnProperty.call(data, key)) {
+              const value = data[key];
+              console.log(`Key: ${key}, Value: ${value}`);
+              data[key] = value + Math.floor(Math.random() * 10000);;
+          }
+        }
+        await setStorageData({ data: data });
+        browser.tabs.create({ url: '/details/details.html' });
+    };
+
+  }
 
   /*
         Function calls
   */
 
-
   drawContent();
   drawPieChart();
+  handleButton();
   setInterval(updateContent, 1000);
 
 });
