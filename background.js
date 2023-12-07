@@ -78,37 +78,6 @@ async function handleActiveTab(tabId) {
 */
 
 let currActiveTab;
-
-// Listener for tab activation
-chrome.tabs.onActivated.addListener(async function (activeInfo) {
-  if (currActiveTab !== activeInfo.tabId){
-    currActiveTab = activeInfo.tabId;
-    console.debug("----> [Listener] tab activation");
-    await handleActiveTab(activeInfo.tabId);
-  }
-});
-
-
-// Listen for window focus change
-chrome.windows.onFocusChanged.addListener(async function(windowId) {
-
-  if (windowId === chrome.windows.WINDOW_ID_NONE) {
-    console.debug("No focused window.");
-  } else {
-    // Get the active tab in the focused window
-    chrome.tabs.query({ active: true, windowId: windowId }, async function(tabs) {
-      if (tabs.length > 0) {
-        if (currActiveTab !== tabs[0].id){
-          currActiveTab = tabs[0].id;
-          console.debug("----> [Listener] window focus");
-          await handleActiveTab(tabs[0].id);
-        }
-      }
-    });
-  }
-});
-
-// Create a queue to manage tab updates
 const tabUpdateQueue = [];
 let isProcessingQueue = false;
 
@@ -133,17 +102,45 @@ async function processTabUpdate(tabId) {
   }
 }
 
-// Listener for tab updates
-chrome.tabs.onUpdated.addListener(function (tabId, changeInfo) {
-  // Check if the URL has changed
-  if (changeInfo.url) {
+// Listener for tab activation
+chrome.tabs.onActivated.addListener(async function (activeInfo) {
+  if (currActiveTab !== activeInfo.tabId) {
+    currActiveTab = activeInfo.tabId;
+    console.debug("----> [Listener] tab activation");
+    
     // Add the tabId to the queue
-    tabUpdateQueue.push(tabId);
+    tabUpdateQueue.push(activeInfo.tabId);
 
     // If the queue is not being processed, start processing it
     if (!isProcessingQueue) {
       isProcessingQueue = true;
-      processTabUpdate(tabId);
+      processTabUpdate(activeInfo.tabId);
     }
+  }
+});
+
+// Listen for window focus change
+chrome.windows.onFocusChanged.addListener(async function (windowId) {
+  if (windowId === chrome.windows.WINDOW_ID_NONE) {
+    console.debug("No focused window.");
+  } else {
+    // Get the active tab in the focused window
+    chrome.tabs.query({ active: true, windowId: windowId }, async function (tabs) {
+      if (tabs.length > 0) {
+        if (currActiveTab !== tabs[0].id) {
+          currActiveTab = tabs[0].id;
+          console.debug("----> [Listener] window focus");
+          
+          // Add the tabId to the queue
+          tabUpdateQueue.push(tabs[0].id);
+
+          // If the queue is not being processed, start processing it
+          if (!isProcessingQueue) {
+            isProcessingQueue = true;
+            processTabUpdate(tabs[0].id);
+          }
+        }
+      }
+    });
   }
 });
