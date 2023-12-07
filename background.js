@@ -108,12 +108,42 @@ chrome.windows.onFocusChanged.addListener(async function(windowId) {
   }
 });
 
+// Create a queue to manage tab updates
+const tabUpdateQueue = [];
+let isProcessingQueue = false;
+
+// Function to handle tab updates
+async function processTabUpdate(tabId) {
+  console.debug("----> [Listener] tab update");
+  // Perform operations here based on the tab update (e.g., call handleActiveTab)
+  await handleActiveTab(tabId);
+
+  // Remove the processed tabId from the queue
+  const index = tabUpdateQueue.indexOf(tabId);
+  if (index > -1) {
+    tabUpdateQueue.splice(index, 1);
+  }
+
+  // Process the next tab update in the queue, if any
+  if (tabUpdateQueue.length > 0) {
+    const nextTabId = tabUpdateQueue[0];
+    await processTabUpdate(nextTabId);
+  } else {
+    isProcessingQueue = false;
+  }
+}
+
 // Listener for tab updates
-chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo) {
+chrome.tabs.onUpdated.addListener(function (tabId, changeInfo) {
   // Check if the URL has changed
   if (changeInfo.url) {
-    // Log information about the updated tab
-    console.debug("----> [Listener] tab update");
-    await handleActiveTab(tabId);
+    // Add the tabId to the queue
+    tabUpdateQueue.push(tabId);
+
+    // If the queue is not being processed, start processing it
+    if (!isProcessingQueue) {
+      isProcessingQueue = true;
+      processTabUpdate(tabId);
+    }
   }
 });
