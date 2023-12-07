@@ -4,7 +4,7 @@
 ### TODO
 
 Bugs:
-  1. Active tab sometimes does not update
+  1. If debug mode is not on, setInterval is limited to 30s
 
 Features:
   1. Track data on "inactive" tabs (?)
