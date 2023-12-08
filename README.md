@@ -4,7 +4,8 @@
 ### TODO
 
 Bugs:
-  1. ~~If debug mode is not on, setInterval is limited to 30s~~
+  1. Popping a window out causes the tab activation listener to run operations twice.
+  2. Rapid tab updates cause tab update listener to run operations twice.
 
 Features:
   1. Track data on "inactive" tabs (?)
