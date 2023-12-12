@@ -86,10 +86,9 @@ async function pushDomainToQueue(tabId){
   if (tab) {
     let url = new URL(tab.url);
     let domain = url.hostname;
-    if (domain){
-      dQueue.push(domain);
-      await setStorageData({ dQueue });
-    }
+    
+    dQueue.push(domain);
+    await setStorageData({ dQueue });
   }
 }
 
