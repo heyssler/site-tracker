@@ -106,7 +106,7 @@ async function drawContent(){
       var infoDiv = document.getElementById('entryList');
       infoDiv.textContent = "Start browsing the web to see data!";
     } else {
-      console.debug(`Top ${numEntries} entries: ${topEntries}`);
+      console.debug(`[popup] Top ${numEntries} entries: ${topEntries}`);
       updateTotalTime(data);
     }
   } else {
@@ -176,7 +176,7 @@ async function handleButton(){
   // Add an onclick event handler to the button
   button.onclick = async function() {
       // Actions to perform when the button is clicked
-      console.log('Button clicked!');
+      console.debug('[popup] Button clicked!');
       for (const key in data) {
         if (Object.hasOwnProperty.call(data, key)) {
             const value = data[key];
