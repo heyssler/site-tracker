@@ -21,18 +21,22 @@ chrome.runtime.onInstalled.addListener(async details => {
 */
 
 // Increment the time spent on a given domain
-async function incrementTime(domain) {
+async function incrementTime(domain, date) {
   const { data } = await getStorageData('data');
 
-  if (data[domain]){
-    data[domain] = data[domain] + 1;
+  if (data[date]){
+    if (data[date][domain]){
+      data[date][domain] = data[date][domain] + 1;
+    } else {
+      data[date][domain] = 1;
+    }
   } else {
-    data[domain] = 1;
+    data[date] = {};
   }
 
   await setStorageData({ data: data });
 
-  console.debug(`${domain} - ${data[domain]}`);
+  console.debug(`[${date}] ${domain} - ${data[date][domain]}`);
 }
 
 // Handle the intervals that will be running in the background
@@ -48,7 +52,7 @@ async function handleInterval(domain) {
       clearInterval(timeIntervalId);
     }
     // start
-    timeIntervalId = setInterval(incrementTime, 1000, domain);
+    timeIntervalId = setInterval(incrementTime, 1000, domain, getDateFormatted(new Date()));
 
     await setStorageData({ timeIntervalId  })
     console.debug(`[handleInterval] setting T[${timeIntervalId}]`);
