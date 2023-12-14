@@ -2,6 +2,7 @@
 <html>
   
 <script src="/helpers.js"></script>
+<script src="/external/chart.js"></script>
 
 <head>
   <title>Site Time Tracker</title>
@@ -12,13 +13,15 @@
   <div class="heading">Site Time-Tracker</div>
   <div id="info", class="info"></div>
   <ul id="entryList"></ul>
+  <ul>
+    <span class="info2">...</span>
+    <span id="totalTime" class="info"></span>
+  </ul>
   <canvas id="pieChart"></canvas> 
   <script src="popup.js"></script>
-  <script src="/external/chart.js"></script>
   <div id="footer">
     <!--button id="reset" class="button-54">reset</button-->
-    <button id="developerButton">Fast Forward</button>
-    <span id="totalTime" class="info"></span>
+    <button class="button-23", id="developerButton">details >></button>
   </div>
 </body>
 

@@ -34,7 +34,7 @@ function convertTime(seconds) {
     return { d, h, m, s };
 }
   
-  // Display time in a nice format. Expected input is from above function
+// Display time in a nice format. Expected input is from above function
 function displayTime(time) {
     const units = ['d', 'h', 'm', 's'];
     let timeString = '';
@@ -46,6 +46,16 @@ function displayTime(time) {
     }
   
     return timeString;
+}
+
+// Ingest a Date(), and return a date string in MM/dd/YYYY format
+function getDateFormatted(date){
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1; // note: Months are zero-indexed (0-11)
+  const day = date.getDate();
+  const formattedDate = month + '/' + day + '/' + year;
+
+  return formattedDate;
 }
 
 /*
@@ -62,4 +72,21 @@ function getTabInfo(tabId) {
         }
       });
     });
+}
+
+/*
+      Process data
+*/
+
+async function getTopEntriesByDate(data, numEntries, date){  
+  if (data[date]) {
+    // Convert the object to an array of [key, value] pairs
+    const dataArray = Object.entries(data[date]);
+    // Sort the array based on the values in descending order
+    dataArray.sort((a, b) => b[1] - a[1]);
+    // Extract the top entries
+    return dataArray.slice(0, numEntries).map(entry => entry[0]);
+  } else {
+    return null;
+  }
 }
