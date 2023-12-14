@@ -156,45 +156,10 @@ async function handleButton(){
   // Get the button element by its ID
   const button = document.getElementById('developerButton');
 
-  button.onclick = async function() {
-    const { data } = await getStorageData('data');
-
-    // get a random day.
-    for (i = 2; i < 9; i++){
-      date = `01/0${i}/1997`;
-      for (j = 40; j < 50; j++){
-        domain = `www.somesite.${j}`;
-        value = Math.floor(Math.random() * 10000);
-
-        if (!data[date]){
-          data[date] = {};
-        }
-
-        data[date][domain] = value;
-
-      }
-    }
-    await setStorageData({ data: data });
-    console.log(`[popup]\n[randomizer]`, data);
-    browser.tabs.create({ url: '/details/details.html' });
-  }
-  /*
   // Add an onclick event handler to the button
   button.onclick = async function() {
-      // Actions to perform when the button is clicked
-      console.debug('[popup] Button clicked!');
-      for (const key in data[DATE_NOW]) {
-        if (Object.hasOwnProperty.call(data[DATE_NOW], key)) {
-            const value = data[DATE_NOW][key];
-            console.log(`Key: ${key}, Value: ${value}`);
-            data[DATE_NOW][key] = value + Math.floor(Math.random() * 10000);;
-        }
-      }
-      await setStorageData({ data: data });
-      browser.tabs.create({ url: '/details/details.html' });
-  };
-  */
-
+    browser.tabs.create({ url: '/details/details.html' });
+  }
 }
 
 /*
@@ -213,3 +178,29 @@ document.addEventListener('DOMContentLoaded', async function() {
   handleButton();
   setInterval(updateContent, 1000);
 });
+
+/*
+      Debug
+*/
+
+async function loadRandomData(){
+  const { data } = await getStorageData('data');
+
+  // get a random day.
+  for (i = 2; i < 9; i++){
+    date = `01/0${i}/1997`;
+    for (j = 40; j < 50; j++){
+      domain = `www.somesite.${j}`;
+      value = Math.floor(Math.random() * 10000);
+
+      if (!data[date]){
+        data[date] = {};
+      }
+
+      data[date][domain] = value;
+
+    }
+  }
+  await setStorageData({ data: data });
+  console.log(`[popup]\n[randomizer]`, data);
+}

@@ -36,7 +36,8 @@ async function incrementTime(domain, date) {
 
   await setStorageData({ data: data });
 
-  console.debug(`[${date}] ${domain} - ${data[date][domain]}`);
+  // uncomment this to see each tick in the debug logs
+  // console.debug(`[${date}] ${domain} - ${data[date][domain]}`);
 }
 
 // Handle the intervals that will be running in the background

@@ -10,7 +10,15 @@ body {
 
 .info {
   font-size: 15px;
-  font-style: italic; 
+  font-style: italic;
+  color: #C0C0C0;
+}
+
+.info2 {
+  font-size: 15px;
+  font-style: italic;
+  color: #C0C0C0;
+  float: left;
 }
 
 a {
@@ -23,7 +31,6 @@ ul {
   list-style-type: none;
   padding: 0;
   margin: 0;
-  margin-bottom: 20px;
 }
 
 span {
@@ -37,24 +44,44 @@ canvas {
   height:100%; 
   max-width: 500px; 
   max-height: 500px;
+  margin-bottom: 0px;
 }
 
-.button-54 {
-  font-size: 15px;
-  letter-spacing: 2px;
-  text-decoration: none;
-  text-transform: uppercase;
-  color: #000;
+.button-23 {
+  background-color: #FFFFFF;
+  box-sizing: border-box;
+  color: #222222;
   cursor: pointer;
-  border: 3px solid;
-  box-shadow: 1px 1px 0px 0px, 2px 2px 0px 0px, 3px 3px 0px 0px, 4px 4px 0px 0px, 5px 5px 0px 0px;
+  float: right;
+  font-family: 'Chivo Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0;
+  outline: none;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  touch-action: manipulation;
+  transition: box-shadow .2s, -ms-transform .1s, -webkit-transform .1s, transform .1s;
   user-select: none;
   -webkit-user-select: none;
-  touch-action: manipulation;
+  width: auto;
+  margin-bottom: 5px;
+  border: none;
 }
 
-.button-54:active {
-  box-shadow: 0px 0px 0px 0px;
-  top: 5px;
-  left: 5px;
+.button-23:focus-visible {
+  box-shadow: #222222 0 0 0 2px, rgba(255, 255, 255, 0.8) 0 0 0 4px;
+  transition: box-shadow .2s;
+}
+
+.button-23:active {
+  background-color: #F7F7F7;
+  transform: scale(.96);
+}
+
+.button-23:disabled {
+  color: #DDDDDD;
+  cursor: not-allowed;
+  opacity: 1;
 }
