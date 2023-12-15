@@ -70,17 +70,11 @@ async function drawMostVisitedSitesChart(){
       }
     };
   });
-  console.log("these are my topSites", topSites);
 
   // Convert the object to an array of [key, value] pairs
   let topSitesSortedArray = Object.entries(topSites);
   // Sort the array based on the values in descending order
   topSitesSortedArray.sort((a, b) => b[1] - a[1]);
-
-  console.log("and my topSitesSortedArray", topSitesSortedArray);
-  console.log("and my topSitesSortedArray[i][0]", topSitesSortedArray[0][0]);
-
-
 
   for (let i = 0; i < Math.min(numEntries, topSitesSortedArray.length); i++){
     xValues.push(topSitesSortedArray[i][0])
