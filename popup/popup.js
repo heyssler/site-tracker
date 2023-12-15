@@ -6,6 +6,8 @@ async function updateContent(){
   const numEntries = 10;
   const { data } = await getStorageData('data');
   const topEntriesByDate = await getTopEntriesByDate(data, numEntries, DATE_NOW);
+  // don't try to draw if no data available
+  if (!topEntriesByDate){ return; }
 
   const liElements = document.querySelectorAll('li');
 
@@ -86,15 +88,10 @@ async function drawContent(){
     }
     });
     
-    if (topEntriesByDate.length === 0){
-      var infoDiv = document.getElementById('entryList');
-      infoDiv.textContent = "Start browsing the web to see data!";
-    } else {
-      console.debug(`[popup]\n${DATE_NOW}] Top ${numEntries} entries: ${topEntriesByDate}`);
-      updateTotalTime(data);
-    }
+    console.debug(`[popup]\n${DATE_NOW}] Top ${numEntries} entries: ${topEntriesByDate}`);
+    updateTotalTime(data);
   } else {
-      console.error('No data found. This may be an issue with initialization.');
+      console.info('No data found. This may be an issue with initialization.');
   }
 }
 
@@ -113,6 +110,8 @@ async function drawPieChart(){
 
   const { data } = await getStorageData('data');
   const topEntriesByDate = await getTopEntriesByDate(data, numEntries, DATE_NOW);
+  // don't try to draw if no data available
+  if (!topEntriesByDate){ return; }
 
   const xValues = [];
   const yValues = [];
@@ -142,12 +141,15 @@ async function drawPieChart(){
     },
     options:{
       tooltips: {
-        enabled: true
+        enabled: true,
+        callbacks: {
+          label: function(tooltipItem, data) {
+            let label = displayTime(convertTime(data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index]));
+            return label;
+          }
+        }
       },
-      legend: {
-        display: true,
-        position: 'right'
-      }
+      legend: { display: true, position: 'right' }
     }
   });
 }

@@ -7,6 +7,7 @@ async function drawTodaysPieChart(){
 
   const { data } = await getStorageData('data');
   const topEntriesByDate = await getTopEntriesByDate(data, numEntries, DATE_NOW);
+  if (!topEntriesByDate){ return; } // exit if no data
 
   const xValues = [];
   const yValues = [];
@@ -28,9 +29,17 @@ async function drawTodaysPieChart(){
     type: "doughnut",
     data: chartData,
     options: {
-      tooltips: { enabled: true },
+      tooltips: {
+        enabled: true,
+        callbacks: {
+          label: function(tooltipItem, data) {
+            let label = displayTime(convertTime(data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index]));
+            return label;
+          }
+        }
+      },
       legend: { display: true, position: 'right' },
-      title: { display: true, text: 'Top sites today' },
+      title: { display: true, text: 'Top sites today', fontSize: 30 },
     }
   };
   
@@ -41,6 +50,7 @@ async function drawMostVisitedSitesChart(){
   const numEntries = 10;
 
   const { data } = await getStorageData('data');
+  // don't try to draw if no data available
   let topSites = {};
 
   const xValues = [];
@@ -48,6 +58,8 @@ async function drawMostVisitedSitesChart(){
 
   // find top sites of all time
   const dates = Object.keys(data); // return all available dates
+  if (dates.length === 0 ){ return; }  // exit if no data available
+
   dates.forEach( date => { // iterate over each date, and add up time spent for each site
     const sites = data[date];
     for (let site in sites){
@@ -58,14 +70,19 @@ async function drawMostVisitedSitesChart(){
       }
     };
   });
+  console.log("these are my topSites", topSites);
 
   // Convert the object to an array of [key, value] pairs
   let topSitesSortedArray = Object.entries(topSites);
   // Sort the array based on the values in descending order
   topSitesSortedArray.sort((a, b) => b[1] - a[1]);
 
+  console.log("and my topSitesSortedArray", topSitesSortedArray);
+  console.log("and my topSitesSortedArray[i][0]", topSitesSortedArray[0][0]);
 
-  for (let i = 0; i < numEntries; i++){
+
+
+  for (let i = 0; i < Math.min(numEntries, topSitesSortedArray.length); i++){
     xValues.push(topSitesSortedArray[i][0])
     yValues.push(topSitesSortedArray[i][1])
   }
@@ -87,13 +104,13 @@ async function drawMostVisitedSitesChart(){
     data: chartData,
     options: {
       legend: { display: false },
-      title: { display: true, text: 'Most visited sites of all time' },
+      title: { display: true, text: 'Most visited sites of all time', fontSize: 30 },
       scales: {
         yAxes: [{
           ticks: {
             callback: function(value) {
-              // Convert minutes to hours
-              return Math.floor(value / 60) + 'h';
+              // convert s to hours
+              return Math.floor(value / 60 / 60) + 'h';
             }
           },
           scaleLabel: {
@@ -101,8 +118,17 @@ async function drawMostVisitedSitesChart(){
             labelString: 'Time Spent (hours)'
           }
         }]
+      },
+      tooltips: {
+        enabled: true,
+        callbacks: {
+          label: function(tooltipItem, data) {
+            let label = displayTime(convertTime(data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index]));
+            return label;
+          }
+        }
       }
-    }
+    },
   };
   
   const ctx = document.getElementById('mostVisitedSitesChart').getContext('2d');

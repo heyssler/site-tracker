@@ -5,8 +5,16 @@ body {
 .heading {
     display: flex;
     justify-content: center;
+    margin-bottom: 30px;
 }
 
 .icon {
     margin-right: 10px;
+}
+
+.chart-container {
+    max-width: 900px; 
+    max-height: 900px; 
+    display:block; 
+    margin:0 auto;
 }
