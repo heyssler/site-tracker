@@ -85,3 +85,16 @@ canvas {
   cursor: not-allowed;
   opacity: 1;
 }
+
+.timenav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  button {
+    color: #A9A9A9;
+  }
+  span {
+    color: #A9A9A9;
+  }
+}

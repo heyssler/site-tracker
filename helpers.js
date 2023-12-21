@@ -58,6 +58,30 @@ function getDateFormatted(date){
   return formattedDate;
 }
 
+// Add or subtract a date from the format above
+function manipulateDate(inputDate, operation) {
+  const dateParts = inputDate.split('/'); // Split the input date string
+  const month = parseInt(dateParts[0]) - 1; // Month (0-indexed)
+  const day = parseInt(dateParts[1]); // Day
+  const year = parseInt(dateParts[2]); // Year
+
+  const currentDate = new Date(year, month, day); // Create a Date object
+
+  if (operation === 'add') {
+    currentDate.setDate(currentDate.getDate() + 1); // Add 1 day
+  } else if (operation === 'subtract') {
+    currentDate.setDate(currentDate.getDate() - 1); // Subtract 1 day
+  } else {
+    console.log('Invalid operation. Please use "add" or "subtract".');
+    return null; // Return null for invalid operations
+  }
+
+  // Format the date back to MM/dd/YYYY format
+  const manipulatedDate = `${currentDate.getMonth() + 1}/${currentDate.getDate()}/${currentDate.getFullYear()}`;
+  return manipulatedDate;
+}
+
+
 /*
         Tab information
 */

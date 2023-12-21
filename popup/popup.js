@@ -5,11 +5,19 @@
 async function updateContent(){
   const numEntries = 10;
   const { data } = await getStorageData('data');
-  const topEntriesByDate = await getTopEntriesByDate(data, numEntries, DATE_NOW);
-  // don't try to draw if no data available
-  if (!topEntriesByDate){ return; }
-
+  const topEntriesByDate = await getTopEntriesByDate(data, numEntries, DATE);
   const liElements = document.querySelectorAll('li');
+
+  if (!topEntriesByDate){ 
+    console.debug("No Entries Found");
+
+    liElements.forEach(li => {
+      li.remove();
+    });
+
+    updateTotalTime(null);
+    return; 
+  }
 
   i = 0;
 
@@ -23,10 +31,11 @@ async function updateContent(){
     a.textContent = entry;
     a.href = 'http://' + entry;
 
-    const totalTime = convertTime(data[DATE_NOW][entry]);
+    const totalTime = convertTime(data[DATE][entry]);
     const totalTimeString = displayTime(totalTime);
     span.textContent = totalTimeString;
     span.id = entry;
+
     i++;
   });
 
@@ -42,7 +51,7 @@ async function updateContent(){
     a.textContent = entry;
     a.href = 'http://' + entry;
 
-    const totalTime = convertTime(data[DATE_NOW][entry]);
+    const totalTime = convertTime(data[DATE][entry]);
     const totalTimeString = displayTime(totalTime);
     span.textContent = totalTimeString;
     span.id = entry;
@@ -56,105 +65,25 @@ async function updateContent(){
   updateTotalTime(data);
 }
 
-async function drawContent(){
-  const numEntries = 10;
-  const { data } = await getStorageData('data');
-  const topEntriesByDate = await getTopEntriesByDate(data, numEntries, DATE_NOW);
-
-  if (topEntriesByDate) {
-    var entryList = document.getElementById('entryList');
-
-    topEntriesByDate.forEach(entry => {
-      if (!(entry === "")){
-        var li = document.createElement('li');
-        var a = document.createElement('a');
-        var span = document.createElement('span');
-        
-
-        a.textContent = entry;
-        a.href = 'http://' + entry;
-
-        const totalTime = convertTime(data[DATE_NOW][entry]);
-        const totalTimeString = displayTime(totalTime);
-        span.textContent = totalTimeString;
-        span.id = entry;
-  
-        li.appendChild(a);
-        li.appendChild(span);
-
-        entryList.append(li);
-    } else {
-      console.error("Found blank entry! This may lead to issues.");
-    }
-    });
-    
-    console.debug(`[popup]\n${DATE_NOW}] Top ${numEntries} entries: ${topEntriesByDate}`);
-    updateTotalTime(data);
-  } else {
-      console.info('No data found. This may be an issue with initialization.');
-  }
-}
-
 async function updateTotalTime(data){
   const totalTimeElement = document.getElementById('totalTime');
 
-  const dataArray = Object.entries(data[DATE_NOW]).sort((a, b) => b[1] - a[1]);
-  const total = dataArray.map(entry => entry[0]).reduce((acc, entry) => acc + data[DATE_NOW][entry], 0);
-
-  const totalFormatted = displayTime(convertTime(total));
-  totalTimeElement.textContent = `${totalFormatted}`;
+  if (!data){
+    totalTimeElement.style.display = 'None'
+  } else {
+    const dataArray = Object.entries(data[DATE]).sort((a, b) => b[1] - a[1]);
+    const total = dataArray.map(entry => entry[0]).reduce((acc, entry) => acc + data[DATE][entry], 0);
+  
+    const totalFormatted = displayTime(convertTime(total));
+    totalTimeElement.textContent = `${totalFormatted}`;
+    totalTimeElement.style.display = ''
+  }
 }
 
-async function drawPieChart(){
-  const numEntries = 5;
-
-  const { data } = await getStorageData('data');
-  const topEntriesByDate = await getTopEntriesByDate(data, numEntries, DATE_NOW);
-  // don't try to draw if no data available
-  if (!topEntriesByDate){ return; }
-
-  const xValues = [];
-  const yValues = [];
-
-  // Populate xValues and yValues arrays
-  topEntriesByDate.forEach(entry => {
-    xValues.push(entry);
-    yValues.push(data[DATE_NOW][entry]);
-  });
-
-  const barColors = [
-    "#8EC3A7",
-    "#DC5356",
-    "#F0CB69",
-    "#5FB7E5",
-    "#AB91C5"
-  ];
-
-  new Chart("pieChart", {
-    type: "doughnut",
-    data: {
-      labels: xValues,
-      datasets: [{
-        backgroundColor: barColors,
-        data: yValues
-      }]
-    },
-    options:{
-      tooltips: {
-        enabled: true,
-        callbacks: {
-          label: function(tooltipItem, data) {
-            let label = displayTime(convertTime(data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index]));
-            return label;
-          }
-        }
-      },
-      legend: { display: true, position: 'right' }
-    }
-  });
-}
-
-async function handleButton(){
+/*
+      Buttons
+*/
+async function handleMoreDetailsButton(){
   // Get the button element by its ID
   const button = document.getElementById('developerButton');
 
@@ -164,20 +93,123 @@ async function handleButton(){
   }
 }
 
+async function handleTimeNavButtons(){
+  // Backwards 1 day
+  const b_button = document.getElementById('timenav-backward-btn');
+  b_button.onclick = async function() {
+    DATE = manipulateDate(DATE, "subtract");
+    updateTimeNav();
+    updateContent();
+    updateChart();
+  }
+
+  // Forwards 1 day
+  const f_button = document.getElementById('timenav-forward-btn');
+  f_button.onclick = async function() {
+    DATE = manipulateDate(DATE, "add");
+    updateTimeNav();
+    updateContent();
+    updateChart();
+  }
+}
+
+async function updateTimeNav(){
+  const timeNavElement = document.getElementById('timenav-time');
+  timeNavElement.textContent = DATE;
+}
+
+/*
+      Pie Chart
+*/
+
+async function updateChart() {
+  const numEntries = 5;
+
+  const { data } = await getStorageData('data');
+  const topEntriesByDate = await getTopEntriesByDate(data, numEntries, DATE);
+
+  const chart = document.getElementById('pieChart');
+
+  if (!topEntriesByDate){ 
+    // don't try to draw/update, just hide and return
+    chart.style.display = 'none';
+    return; 
+  } else {
+    // gather data for the chart
+    chart.style.display = '';
+
+    const xValues = [];
+    const yValues = [];
+  
+    // Populate xValues and yValues arrays
+    topEntriesByDate.forEach(entry => {
+      xValues.push(entry);
+      yValues.push(data[DATE][entry]);
+    });
+  
+    CHART_DATA = {
+      labels: xValues,
+      datasets: [{
+        backgroundColor: barColors,
+        data: yValues
+      }]
+    };
+
+    if (!CHART){
+      // draw the chart for the first time
+      CHART = new Chart("pieChart", {
+        type: "doughnut",
+        data: CHART_DATA,
+        options: CHART_OPTIONS,
+      });
+    } else {
+        //update the existing chart
+        CHART.data = CHART_DATA;
+    }
+    CHART.update();
+  }
+}
+
 /*
       Globals
 */
 
-const DATE_NOW = getDateFormatted(new Date());
+let DATE = getDateFormatted(new Date());
+let CHART = null;
+let CHART_DATA = null;
+let CHART_OPTIONS = {
+  tooltips: {
+    enabled: true,
+    callbacks: {
+      label: function(tooltipItem, data) {
+        let label = displayTime(convertTime(data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index]));
+        return label;
+      }
+    }
+  },
+  legend: { display: true, position: 'right' }
+}
+const barColors = [
+  "#8EC3A7",
+  "#DC5356",
+  "#F0CB69",
+  "#5FB7E5",
+  "#AB91C5"
+];
 
 /*
       Listeners
 */
 
 document.addEventListener('DOMContentLoaded', async function() {
-  drawContent();
-  drawPieChart();
-  handleButton();
+  updateContent();
+  updateChart();
+
+  handleTimeNavButtons();
+  updateTimeNav();
+
+  handleMoreDetailsButton();
+
   setInterval(updateContent, 1000);
 });
 
@@ -190,7 +222,7 @@ async function loadRandomData(){
 
   // get a random day.
   for (i = 2; i < 9; i++){
-    date = `01/0${i}/1997`;
+    date = `12/1${i}/2023`;
     for (j = 40; j < 50; j++){
       domain = `www.somesite.${j}`;
       value = Math.floor(Math.random() * 10000);
